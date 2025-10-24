@@ -19,7 +19,7 @@ The application is a basic question answering system that uses the Groq API to a
 ## 3\. Tools & Frameworks Used
 
   * **Python:** The primary programming language.
-  * **Groq API:** For accessing LLMs.
+  * **Groq API:** For accessing open-source LLMs.
   * **Streamlit:** For building the interactive web frontend.
   * **`python-dotenv`:** For loading environment variables (API keys).
   * **`uv` (or `pip`, `conda`, `poetry`):** For virtual environment and dependency management.
@@ -34,8 +34,8 @@ The application is a basic question answering system that uses the Groq API to a
 ### 4.2. Clone the Repository
 
 ``` bash
-git clone <https://github.com/Andela-GenAI/genai-bootcamp>
-cd <week_1>
+git clone https://github.com/Andela-GenAI/genai-bootcamp
+cd week_1
 
 ```
 
