@@ -1,14 +1,14 @@
 name: Weekly Project Submission
-description: "Submit a projet to complete a milestone"
-title: "Project: <insert project title>"
+description: "Submit a project to complete a milestone"
+title: "Project: <insert project title here>"
 body:
-  - type: input
-    id: name
-    attributes:
-      label: Project Name
-      description: Name of your project
-    validations:
-      required: true
+  # - type: input
+  #   id: name
+  #   attributes:
+  #     label: Project Name
+  #     description: Name of your project
+  #   validations:
+  #     required: true
   - type: textarea
     id: description
     attributes:
