@@ -77,8 +77,3 @@ streamlit run streamlit_app.py
 
 ---
 
-## 🎬 3‑minute Demo Script
-
-1) **News**: paste a known article → run summary (detailed) → show headline + bullets.
-2) **YouTube**: paste URL → run (shows transcript size) → display summary → ask 1–2 questions in the Q&A box.
-3) **Voice RAG**: upload a PDF → index → click record (or upload short WAV/MP3) → ask “What are the main recommendations?” → play back ElevenLabs audio.
