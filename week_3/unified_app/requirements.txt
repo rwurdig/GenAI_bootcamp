@@ -1,0 +1,35 @@
+# Core app
+streamlit>=1.37.0
+python-dotenv>=1.0.1
+
+# LangChain (v0.2+)
+langchain>=0.2.11
+langchain-community>=0.2.10
+langchain-text-splitters>=0.2.2
+langchain-openai>=0.1.17
+langchain-groq>=0.1.0
+
+# Vector store
+chromadb>=0.5.5
+
+# Embeddings / token helpers
+tiktoken>=0.7.0
+
+# Article extraction
+newspaper3k>=0.2.8
+trafilatura>=1.7.0
+
+# YouTube + transcription
+yt-dlp>=2024.8.6
+youtube-transcript-api>=0.6.2
+openai-whisper>=20231117
+ffmpeg-python>=0.2.0
+
+# PDF/text parsing
+pypdf>=4.2.0
+
+# TTS
+elevenlabs>=1.5.0
+
+# Optional: mic recorder widget (falls back to file upload if not available)
+streamlit-mic-recorder>=0.0.8
