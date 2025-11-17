@@ -33,13 +33,6 @@ source .venv/bin/activate  # Windows: .venv\Scripts\activate
 uv pip install -r requirements.txt  # or pip install -r requirements.txt
 cp .env.example .env
 
-# Add at least one API key (only the provider you plan to demo is required)
-GROQ_API_KEY=...
-OPENAI_API_KEY=...
-```
-
-Fill `.env` with either `GROQ_API_KEY` or `OPENAI_API_KEY` depending on the provider you plan to demo.
-
 ## ▶️ Run
 
 ```bash
