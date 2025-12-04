@@ -33,6 +33,13 @@ env/
 *.env
 .env.*
 .env.genai
+.env.local
+
+# API Keys - NEVER commit these
+*api_key*
+*API_KEY*
+secrets.json
+credentials.json
 
 # IDE
 .vscode/
@@ -47,10 +54,23 @@ Thumbs.db
 
 # Logs
 *.log
+logs/
 
 # Streamlit
 .streamlit/
 
 # Vector Database
 .chroma/
+chroma_db/
+vectorstore/
+faiss_index/
+*.faiss
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Cache
+.cache/
+*.pkl
+*.pickle
 *.sqlite3
