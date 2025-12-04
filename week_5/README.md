@@ -1,23 +1,22 @@
-# Week 5 - GenAI Projects Deployment
+# Week 5 - Cloud AI Engineering
 
-Three AI-powered applications deployed on Google Cloud Platform.
+Three AI-powered applications for Cloud AI Engineering week.
 
 ## Projects
 
-### 1. Flipkart Product Recommender
+### 1. AI Anime Recommender (Day 2)
+- **Tech Stack:** Streamlit, LangChain, ChromaDB, Groq LLM
+- **Description:** Anime recommendation system using RAG with synopsis-based similarity search
+
+### 2. Flipkart Product Recommender (Day 4)
 - **Port:** 5000
 - **Tech Stack:** Flask, LangChain, ChromaDB, Groq LLM
-- **Description:** E-commerce chatbot that recommends products based on user queries using RAG (Retrieval Augmented Generation)
+- **Description:** E-commerce chatbot that recommends products based on user queries using RAG
 
-### 2. AI Travel Planner
+### 3. AI Travel Planner (Day 5)
 - **Port:** 8501
 - **Tech Stack:** Streamlit, LangChain, Groq LLM
 - **Description:** Interactive travel itinerary generator that creates personalized travel plans
-
-### 3. Medical RAG Chatbot
-- **Port:** 8502
-- **Tech Stack:** Flask, LangChain, FAISS, Groq LLM
-- **Description:** Medical Q&A assistant that provides health information using RAG
 
 ## Deployment URLs
 
@@ -25,7 +24,6 @@ Three AI-powered applications deployed on Google Cloud Platform.
 |---------|-----|
 | Flipkart Recommender | http://<EXTERNAL_IP>:5000 |
 | AI Travel Planner | http://<EXTERNAL_IP>:8501 |
-| Medical RAG Chatbot | http://<EXTERNAL_IP>:8502 |
 
 ## Setup Instructions
 
@@ -65,95 +63,32 @@ cp .env.example .env
 streamlit run app.py --server.port=8501 --server.address=0.0.0.0
 ```
 
-```bash
-# Medical RAG
-cd medical-rag
-python3 -m venv venv
-source venv/bin/activate
-pip install -e .
-cp .env.example .env
-# Edit .env with your GROQ_API_KEY
-python app/application.py
-```
-
-### Using tmux for Persistent Deployment
-
-```bash
-# Start Flipkart
-tmux new-session -d -s flipkart "cd ~/projects/flipkart-recommender && source venv/bin/activate && python app.py"
-
-# Start Travel Planner
-tmux new-session -d -s travel "cd ~/projects/ai-travel-planner && source venv/bin/activate && streamlit run app.py --server.port=8501 --server.address=0.0.0.0 --server.headless=true"
-
-# Start Medical RAG
-tmux new-session -d -s medical "cd ~/projects/medical-rag && source venv/bin/activate && python app/application.py"
-
-# Check running sessions
-tmux ls
-
-# Attach to a session
-tmux attach -t flipkart  # Use Ctrl+B then D to detach
-```
-
-## GCP Firewall Setup
-
-Create a firewall rule to allow traffic to the application ports:
-
-```bash
-gcloud compute firewall-rules create allow-apps \
-  --direction=INGRESS \
-  --priority=1000 \
-  --network=default \
-  --action=ALLOW \
-  --rules=tcp:5000,tcp:8501,tcp:8502 \
-  --source-ranges=0.0.0.0/0
-```
-
 ## Project Structure
 
 ```
 week_5/
 ├── README.md
-├── flipkart-recommender/
+├── anime-recommender/          # Day 2: AI Anime Recommender
+│   ├── app/
+│   ├── config/
+│   ├── data/
+│   ├── pipeline/
+│   ├── src/
+│   └── utils/
+├── flipkart-recommender/       # Day 4: Flipkart Product Recommender
 │   ├── app.py
-│   ├── requirements.txt
-│   ├── setup.py
-│   ├── Dockerfile
-│   ├── .env.example
 │   ├── flipkart/
-│   │   ├── config.py
-│   │   ├── data_ingestion.py
-│   │   └── rag_chain.py
 │   ├── templates/
 │   └── static/
-├── ai-travel-planner/
-│   ├── app.py
-│   ├── requirements.txt
-│   ├── setup.py
-│   ├── Dockerfile
-│   ├── .env.example
-│   └── src/
-│       ├── chains/
-│       ├── config/
-│       ├── core/
-│       └── utils/
-└── medical-rag/
-    ├── requirements.txt
-    ├── setup.py
-    ├── Dockerfile
-    ├── .env.example
-    └── app/
-        ├── application.py
-        ├── components/
-        ├── config/
-        ├── common/
-        └── templates/
+└── ai-travel-planner/          # Day 5: AI Travel Planner
+    ├── app.py
+    └── src/
 ```
 
 ## Technologies Used
 
 - **LLM:** Groq (Llama 3.1 8B Instant, Llama 3.3 70B Versatile)
 - **Embeddings:** HuggingFace sentence-transformers/all-MiniLM-L6-v2
-- **Vector Stores:** ChromaDB, FAISS
+- **Vector Stores:** ChromaDB
 - **Frameworks:** Flask, Streamlit, LangChain
 - **Deployment:** Google Cloud Platform (Compute Engine)
