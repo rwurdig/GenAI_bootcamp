@@ -2,6 +2,8 @@ import os
 from dataclasses import dataclass
 from typing import Optional
 
+from dotenv import load_dotenv
+
 
 @dataclass(frozen=True)
 class AppConfig:
@@ -14,6 +16,9 @@ class AppConfig:
 
 
 def load_config() -> AppConfig:
+    # Allows local runs using a `.env` file. In Kubernetes, variables are injected
+    # via Secret/env and this is a no-op if no `.env` exists.
+    load_dotenv(override=False)
     return AppConfig(
         groq_api_key=os.getenv("GROQ_API_KEY"),
         openai_api_key=os.getenv("OPENAI_API_KEY"),
