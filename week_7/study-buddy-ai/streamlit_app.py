@@ -47,7 +47,11 @@ tab_chat, tab_quiz = st.tabs(["Chat", "Quiz Generator"])
 
 def get_llm_cached():
     cache_key = f"{provider}:{model}:{temperature}:{max_tokens}"
-    if "llm_cache_key" not in st.session_state or st.session_state.llm_cache_key != cache_key:
+    if (
+        "llm_cache_key" not in st.session_state
+        or st.session_state.llm_cache_key != cache_key
+        or "llm_instance" not in st.session_state
+    ):
         st.session_state.llm_cache_key = cache_key
         st.session_state.llm_instance = build_llm(
             cfg=cfg,
