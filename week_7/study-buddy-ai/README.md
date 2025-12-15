@@ -1,44 +1,46 @@
-# Study Buddy AI (Week 7)
+# Study Buddy AI
 
-Streamlit app with:
-- Provider/model selection (Groq or OpenAI)
-- Persona-based chat
-- Quiz generator (MCQ or open-ended) with JSON + Pydantic validation
+Week 7 project for Andela GenAI Bootcamp. Quiz generator + chat with persona selection.
 
-## Local Run
+## Features
+- Provider/model selection (Groq, OpenAI)
+- 3 chat personas (Study Buddy, Socratic Tutor, Exam Coach)
+- MCQ and open-ended quiz generation
+- Pydantic validation for quiz JSON
 
+## Run locally
 ```bash
 cd week_7/study-buddy-ai
-python3 -m venv .venv
-source .venv/bin/activate
+python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
-# set at least one of these
 export GROQ_API_KEY="..."
-export OPENAI_API_KEY="..."
+# optional: export OPENAI_API_KEY="..."
 
 streamlit run streamlit_app.py
 ```
 
 ## Docker
-
 ```bash
-docker build -t study-buddy-ai:local week_7/study-buddy-ai
-docker run --rm -p 8501:8501 -e GROQ_API_KEY="..." study-buddy-ai:local
+docker build -t study-buddy:local .
+docker run --rm -p 8501:8501 -e GROQ_API_KEY="..." study-buddy:local
 ```
 
-## Kubernetes + ArgoCD
+## K8s deployment
 
-Manifests live in `week_7/study-buddy-ai/manifests/`.
-
+Manifests in `manifests/`. Uses ArgoCD for GitOps.
 ```bash
-kubectl apply -f week_7/study-buddy-ai/manifests/namespace.yaml
+kubectl apply -f manifests/namespace.yaml
 
 kubectl create secret generic study-buddy-secrets \
   -n study-buddy \
-  --from-literal=GROQ_API_KEY="YOUR_GROQ_KEY" \
-  --from-literal=OPENAI_API_KEY="YOUR_OPENAI_KEY"
+  --from-literal=GROQ_API_KEY="..." \
+  --from-literal=OPENAI_API_KEY="..."
 
-kubectl apply -f week_7/study-buddy-ai/manifests/deployment.yaml
-kubectl apply -f week_7/study-buddy-ai/manifests/service.yaml
+kubectl apply -f manifests/
 ```
+
+## Stack
+- LangChain + Groq/OpenAI
+- Streamlit frontend
+- Docker + Minikube + ArgoCD

@@ -1,27 +1,28 @@
-from dataclasses import dataclass
-from typing import Dict, List
+# available providers and their models
+# update this when groq/openai add new ones
+
+PROVIDERS = ["groq", "openai"]
+
+MODELS = {
+    "groq": [
+        "llama-3.3-70b-versatile",
+        "llama-3.1-8b-instant",
+    ],
+    "openai": [
+        "gpt-5",
+        "gpt-5.1",
+        "gpt-5.2",
+        "gpt-4o",
+        "gpt-4o-mini",
+    ],
+}
 
 
-@dataclass(frozen=True)
-class LLMProviderCatalog:
-    providers: List[str]
-    models_by_provider: Dict[str, List[str]]
+class LLMCatalog:
+    """Simple catalog for UI dropdowns"""
+
+    providers = PROVIDERS
+    models_by_provider = MODELS
 
 
-CATALOG = LLMProviderCatalog(
-    providers=["groq", "openai"],
-    models_by_provider={
-        "groq": [
-            "llama-3.3-70b-versatile",
-            "llama-3.1-8b-instant",
-            # Keep this list minimal; Groq model availability changes over time.
-        ],
-        "openai": [
-            "gpt-5",
-            "gpt-5.1",
-            "gpt-5.2",
-            "gpt-4o",
-            "gpt-4o-mini",
-        ],
-    },
-)
+CATALOG = LLMCatalog()

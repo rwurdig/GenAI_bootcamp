@@ -3,20 +3,20 @@ from typing import List
 from pydantic import BaseModel, Field
 
 
-class MultipleChoiceQuestion(BaseModel):
+class MCQQuestion(BaseModel):
     question: str = Field(..., min_length=5)
     options: List[str] = Field(..., min_length=2)
-    answer: str = Field(..., min_length=1)
+    answer: str
 
 
-class OpenEndedQuestion(BaseModel):
+class OpenQuestion(BaseModel):
     question: str = Field(..., min_length=5)
-    answer: str = Field(..., min_length=1)
+    answer: str
 
 
-class MultipleChoiceQuiz(BaseModel):
-    questions: List[MultipleChoiceQuestion]
+class MCQQuiz(BaseModel):
+    questions: List[MCQQuestion]
 
 
-class OpenEndedQuiz(BaseModel):
-    questions: List[OpenEndedQuestion]
+class OpenQuiz(BaseModel):
+    questions: List[OpenQuestion]

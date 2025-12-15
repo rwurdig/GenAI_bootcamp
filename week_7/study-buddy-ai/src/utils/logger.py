@@ -1,12 +1,18 @@
 import logging
 
+_logger = None
 
-def get_logger(name: str = "study_buddy_ai") -> logging.Logger:
-    logger = logging.getLogger(name)
-    if not logger.handlers:
-        logger.setLevel(logging.INFO)
-        handler = logging.StreamHandler()
-        formatter = logging.Formatter("%(asctime)s %(levelname)s %(name)s. %(message)s")
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
-    return logger
+
+def get_logger(name: str = "study_buddy"):
+    global _logger
+    if _logger:
+        return _logger
+
+    _logger = logging.getLogger(name)
+    _logger.setLevel(logging.INFO)
+
+    h = logging.StreamHandler()
+    h.setFormatter(logging.Formatter("%(asctime)s %(levelname)s: %(message)s"))
+    _logger.addHandler(h)
+
+    return _logger

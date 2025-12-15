@@ -1,54 +1,42 @@
 pipeline {
     agent any
-
+    
     environment {
-        DOCKERHUB_USER = "YOUR_DOCKERHUB_USER"
-        IMAGE_NAME = "study-buddy-ai"
+        DOCKERHUB_USER = "rwurdig"
+        IMAGE = "study-buddy-ai"
         APP_DIR = "week_7/study-buddy-ai"
-        MANIFEST_FILE = "week_7/study-buddy-ai/manifests/deployment.yaml"
-        GITHUB_REPO = "rwurdig/GenAI_bootcamp"
     }
-
+    
     stages {
-        stage("Checkout") {
+        stage("Build") {
             steps {
-                checkout scm
+                sh "docker build -t ${DOCKERHUB_USER}/${IMAGE}:${BUILD_NUMBER} ${APP_DIR}"
             }
         }
-
-        stage("Build Image") {
+        
+        stage("Push") {
             steps {
-                sh """
-                  docker build -t ${DOCKERHUB_USER}/${IMAGE_NAME}:${BUILD_NUMBER} ${APP_DIR}
-                """
-            }
-        }
-
-        stage("Push Image") {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DH_USER', passwordVariable: 'DH_PASS')]) {
-                    sh """
-                      echo \"${DH_PASS}\" | docker login -u \"${DH_USER}\" --password-stdin
-                      docker push ${DOCKERHUB_USER}/${IMAGE_NAME}:${BUILD_NUMBER}
-                    """
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
+                    sh '''
+                        echo "$PASS" | docker login -u "$USER" --password-stdin
+                        docker push ${DOCKERHUB_USER}/${IMAGE}:${BUILD_NUMBER}
+                    '''
                 }
             }
         }
-
-        stage("Update GitOps Manifest") {
+        
+        stage("Update manifest") {
             steps {
-                sh """
-                  sed -i 's|image: .*|image: ${DOCKERHUB_USER}/${IMAGE_NAME}:${BUILD_NUMBER}|' ${MANIFEST_FILE}
-                """
-
+                sh "sed -i 's|image: .*|image: ${DOCKERHUB_USER}/${IMAGE}:${BUILD_NUMBER}|' ${APP_DIR}/manifests/deployment.yaml"
+                
                 withCredentials([usernamePassword(credentialsId: 'github-creds', usernameVariable: 'GH_USER', passwordVariable: 'GH_TOKEN')]) {
-                    sh """
-                      git config user.email \"jenkins@local\"
-                      git config user.name \"jenkins\"
-                      git add ${MANIFEST_FILE}
-                      git commit -m \"chore: deploy ${IMAGE_NAME} build ${BUILD_NUMBER}\" || true
-                      git push https://${GH_USER}:${GH_TOKEN}@github.com/${GITHUB_REPO}.git HEAD:main
-                    """
+                    sh '''
+                        git config user.email "jenkins@ci"
+                        git config user.name "jenkins"
+                        git add ${APP_DIR}/manifests/deployment.yaml
+                        git commit -m "deploy ${IMAGE}:${BUILD_NUMBER}" || true
+                        git push https://${GH_USER}:${GH_TOKEN}@github.com/rwurdig/GenAI_bootcamp.git HEAD:main
+                    '''
                 }
             }
         }
