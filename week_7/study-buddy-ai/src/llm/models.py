@@ -13,13 +13,13 @@ CATALOG = LLMProviderCatalog(
     models_by_provider={
         "groq": [
             "llama-3.3-70b-versatile",
-            "llama-3.1-70b-versatile",
             "llama-3.1-8b-instant",
-            "mixtral-8x7b-32768",
-            "gemma2-9b-it",
+            # Keep this list minimal; Groq model availability changes over time.
         ],
         "openai": [
             "gpt-5",
+            "gpt-5.1",
+            "gpt-5.2",
             "gpt-4o",
             "gpt-4o-mini",
         ],
