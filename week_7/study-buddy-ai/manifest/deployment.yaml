@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: study-buddy-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: study-buddy
+  template:
+    metadata:
+      labels:
+        app: study-buddy
+    spec:
+      containers:
+        - name: study-buddy
+          image: YOUR_DOCKERHUB_USERNAME/study-buddy-ai:latest
+          ports:
+            - containerPort: 8501
+          env:
+            - name: GROQ_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: groq-api-secret
+                  key: GROQ_API_KEY

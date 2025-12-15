@@ -34,6 +34,7 @@ env/
 .env.*
 .env.genai
 .env.local
+!.env.example
 
 # API Keys - NEVER commit these
 *api_key*
@@ -74,3 +75,6 @@ faiss_index/
 *.pkl
 *.pickle
 *.sqlite3
+
+# Accidental nested repo copy
+/GenAI_bootcamp/

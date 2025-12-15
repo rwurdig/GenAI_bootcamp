@@ -1,0 +1,38 @@
+pipeline {
+  agent any
+
+  environment {
+    DOCKERHUB_USERNAME = 'YOUR_DOCKERHUB_USERNAME'
+    IMAGE_NAME = 'study-buddy-ai'
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        checkout scm
+      }
+    }
+
+    stage('Build Docker Image') {
+      steps {
+        sh 'cd week_7/study-buddy-ai && docker build -t $DOCKERHUB_USERNAME/$IMAGE_NAME:latest .'
+      }
+    }
+
+    stage('Push Docker Image') {
+      steps {
+        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DH_USER', passwordVariable: 'DH_PASS')]) {
+          sh 'echo "$DH_PASS" | docker login -u "$DH_USER" --password-stdin'
+          sh 'docker push $DOCKERHUB_USERNAME/$IMAGE_NAME:latest'
+        }
+      }
+    }
+
+    stage('Deploy to Kubernetes') {
+      steps {
+        sh 'kubectl apply -f week_7/study-buddy-ai/manifest/deployment.yaml'
+        sh 'kubectl apply -f week_7/study-buddy-ai/manifest/service.yaml'
+      }
+    }
+  }
+}
