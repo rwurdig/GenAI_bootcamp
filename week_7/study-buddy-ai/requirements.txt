@@ -1,13 +1,9 @@
 streamlit==1.41.1
 python-dotenv==1.0.1
 
-groq==0.13.1
-langchain-core==0.3.25
-langchain-community==0.3.12
-langchain-groq==0.2.1
-langchain-huggingface==0.1.2
-langchain-text-splitters==0.3.3
+pydantic==2.10.4
 
-faiss-cpu==1.8.0.post1
-sentence-transformers==3.3.1
-pypdf==5.1.0
+langchain==0.3.13
+langchain-core==0.3.27
+langchain-openai==0.2.13
+langchain-groq==0.2.4

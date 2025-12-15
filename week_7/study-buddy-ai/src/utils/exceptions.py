@@ -1,0 +1,2 @@
+class StudyBuddyError(Exception):
+    pass

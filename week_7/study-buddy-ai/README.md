@@ -1,53 +1,44 @@
 # Study Buddy AI (Week 7)
 
-A simple **RAG-based** Study Buddy built with **Streamlit + Groq**.
+Streamlit app with:
+- Provider/model selection (Groq or OpenAI)
+- Persona-based chat
+- Quiz generator (MCQ or open-ended) with JSON + Pydantic validation
 
 ## Local Run
 
 ```bash
 cd week_7/study-buddy-ai
-cp .env.example .env
-# edit .env and set GROQ_API_KEY
-
-python3 -m venv venv
-source venv/bin/activate
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 
-streamlit run application.py --server.address=0.0.0.0 --server.port=8501
-```
+# set at least one of these
+export GROQ_API_KEY="..."
+export OPENAI_API_KEY="..."
 
-Open:
-- `http://localhost:8501`
+streamlit run streamlit_app.py
+```
 
 ## Docker
 
 ```bash
-docker build -t study-buddy-ai:local .
-docker run --rm -p 8501:8501 --env-file .env study-buddy-ai:local
+docker build -t study-buddy-ai:local week_7/study-buddy-ai
+docker run --rm -p 8501:8501 -e GROQ_API_KEY="..." study-buddy-ai:local
 ```
 
-## Kubernetes (Minikube)
+## Kubernetes + ArgoCD
 
-Create the secret:
+Manifests live in `week_7/study-buddy-ai/manifests/`.
 
 ```bash
-kubectl create secret generic groq-api-secret \
-  --from-literal=GROQ_API_KEY="YOUR_GROQ_API_KEY"
+kubectl apply -f week_7/study-buddy-ai/manifests/namespace.yaml
+
+kubectl create secret generic study-buddy-secrets \
+  -n study-buddy \
+  --from-literal=GROQ_API_KEY="YOUR_GROQ_KEY" \
+  --from-literal=OPENAI_API_KEY="YOUR_OPENAI_KEY"
+
+kubectl apply -f week_7/study-buddy-ai/manifests/deployment.yaml
+kubectl apply -f week_7/study-buddy-ai/manifests/service.yaml
 ```
-
-Deploy:
-
-```bash
-kubectl apply -f manifest/
-```
-
-Port-forward to match the guide:
-
-```bash
-kubectl port-forward svc/study-buddy-service 8501:80
-```
-
-## Notes
-
-- The app supports **paste notes** or **upload PDF/TXT**, then Q&A over indexed chunks.
-- `.env` is gitignored; use `.env.example` as template.

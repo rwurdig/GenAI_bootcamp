@@ -1,38 +1,56 @@
 pipeline {
-  agent any
+    agent any
 
-  environment {
-    DOCKERHUB_USERNAME = 'YOUR_DOCKERHUB_USERNAME'
-    IMAGE_NAME = 'study-buddy-ai'
-  }
-
-  stages {
-    stage('Checkout') {
-      steps {
-        checkout scm
-      }
+    environment {
+        DOCKERHUB_USER = "YOUR_DOCKERHUB_USER"
+        IMAGE_NAME = "study-buddy-ai"
+        APP_DIR = "week_7/study-buddy-ai"
+        MANIFEST_FILE = "week_7/study-buddy-ai/manifests/deployment.yaml"
+        GITHUB_REPO = "rwurdig/GenAI_bootcamp"
     }
 
-    stage('Build Docker Image') {
-      steps {
-        sh 'cd week_7/study-buddy-ai && docker build -t $DOCKERHUB_USERNAME/$IMAGE_NAME:latest .'
-      }
-    }
-
-    stage('Push Docker Image') {
-      steps {
-        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DH_USER', passwordVariable: 'DH_PASS')]) {
-          sh 'echo "$DH_PASS" | docker login -u "$DH_USER" --password-stdin'
-          sh 'docker push $DOCKERHUB_USERNAME/$IMAGE_NAME:latest'
+    stages {
+        stage("Checkout") {
+            steps {
+                checkout scm
+            }
         }
-      }
-    }
 
-    stage('Deploy to Kubernetes') {
-      steps {
-        sh 'kubectl apply -f week_7/study-buddy-ai/manifest/deployment.yaml'
-        sh 'kubectl apply -f week_7/study-buddy-ai/manifest/service.yaml'
-      }
+        stage("Build Image") {
+            steps {
+                sh """
+                  docker build -t ${DOCKERHUB_USER}/${IMAGE_NAME}:${BUILD_NUMBER} ${APP_DIR}
+                """
+            }
+        }
+
+        stage("Push Image") {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DH_USER', passwordVariable: 'DH_PASS')]) {
+                    sh """
+                      echo \"${DH_PASS}\" | docker login -u \"${DH_USER}\" --password-stdin
+                      docker push ${DOCKERHUB_USER}/${IMAGE_NAME}:${BUILD_NUMBER}
+                    """
+                }
+            }
+        }
+
+        stage("Update GitOps Manifest") {
+            steps {
+                sh """
+                  sed -i 's|image: .*|image: ${DOCKERHUB_USER}/${IMAGE_NAME}:${BUILD_NUMBER}|' ${MANIFEST_FILE}
+                """
+
+                withCredentials([usernamePassword(credentialsId: 'github-creds', usernameVariable: 'GH_USER', passwordVariable: 'GH_TOKEN')]) {
+                    sh """
+                      git config user.email \"jenkins@local\"
+                      git config user.name \"jenkins\"
+                      git add ${MANIFEST_FILE}
+                      git commit -m \"chore: deploy ${IMAGE_NAME} build ${BUILD_NUMBER}\" || true
+                      git push https://${GH_USER}:${GH_TOKEN}@github.com/${GITHUB_REPO}.git HEAD:main
+                    """
+                }
+            }
+        }
     }
-  }
 }

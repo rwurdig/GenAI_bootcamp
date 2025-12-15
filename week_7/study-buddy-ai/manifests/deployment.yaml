@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: study-buddy-ai
+  namespace: study-buddy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: study-buddy-ai
+  template:
+    metadata:
+      labels:
+        app: study-buddy-ai
+    spec:
+      containers:
+        - name: study-buddy-ai
+          image: YOUR_DOCKERHUB_USER/study-buddy-ai:1
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8501
+          env:
+            - name: DEFAULT_LLM_PROVIDER
+              value: "groq"
+            - name: DEFAULT_LLM_MODEL
+              value: "llama-3.3-70b-versatile"
+            - name: DEFAULT_TEMPERATURE
+              value: "0.2"
+            - name: DEFAULT_MAX_TOKENS
+              value: "1024"
+            - name: GROQ_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: study-buddy-secrets
+                  key: GROQ_API_KEY
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: study-buddy-secrets
+                  key: OPENAI_API_KEY
