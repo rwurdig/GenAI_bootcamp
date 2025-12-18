@@ -1,13 +1,13 @@
 ﻿---
 title: SuperTech Store Customer Support
-emoji: ""
+emoji: ":shopping_bags:"
+colorFrom: blue
 colorTo: purple
 sdk: streamlit
 sdk_version: 1.28.0
 app_file: app.py
 pinned: false
 ---
-
 # SuperTech Store Customer Support Chatbot
 
 AI-powered customer support chatbot for SuperTech Store, a computer products retailer.
