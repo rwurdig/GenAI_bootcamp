@@ -1,5 +1,6 @@
-﻿streamlit
+streamlit
 groq
-mcp
-nest-asyncio
+langchain-mcp-adapters
+langchain
+httpx
 python-dotenv
