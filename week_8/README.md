@@ -1,6 +1,6 @@
 ﻿---
 title: SuperTech Store Customer Support
-emoji: ":shopping_bags:"
+emoji: "🛍️"
 colorFrom: blue
 colorTo: purple
 sdk: streamlit
@@ -90,3 +90,4 @@ If `ENABLE_DUMMY_DATA=1`, the app will validate PINs locally for the ** My Order
 ##  Author
 
 Rodrigo Wurdig - Andela GenAI Bootcamp
+
