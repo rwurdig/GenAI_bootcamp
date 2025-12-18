@@ -1,6 +1,6 @@
----
+﻿---
 title: SuperTech Store Customer Support
-emoji: 🛍️
+emoji: 
 colorFrom: blue
 colorTo: purple
 sdk: streamlit
@@ -13,80 +13,81 @@ pinned: false
 
 AI-powered customer support chatbot for SuperTech Store, a computer products retailer.
 
-## Features
+##  Project Overview
 
-- 📦 Order tracking and status
-- 🛒 Product catalog browsing
-- 🔍 Product search
-- ↩️ Return policy information
-- 💬 Natural language support
+This is Week 8 deliverable for the Andela GenAI Bootcamp - MCP Assessment.
 
-## Tech Stack
+**Task:** Build a Customer Support chatbot prototype that integrates with an MCP server.
+
+##  Features
+
+-  Natural language chat interface
+-  Order tracking and status
+-  Product catalog browsing
+-  Product search
+-  Customer verification (email + PIN)
+-  Return policy information
+-  Quick action buttons for common tasks
+
+##  Tech Stack
 
 - **LLM:** Groq (Llama 3.1 8B Instant)
-- **Backend Tools:** MCP (Model Context Protocol)
+- **Backend Tools:** MCP (Model Context Protocol) via SSE
 - **UI:** Streamlit
+- **Deployment:** HuggingFace Spaces
 
-## Local Development
+##  MCP Tools Available
 
-### Prerequisites
+| Tool | Description |
+|------|-------------|
+| `list_products` | Get all available products |
+| `get_product` | Get details of a specific product |
+| `search_products` | Search products by keyword |
+| `get_customer` | Get customer information |
+| `verify_customer_pin` | Verify customer identity |
+| `list_orders` | Get customer's orders |
+| `get_order` | Get specific order details |
+| `create_order` | Create a new order |
 
-- Python 3.10+
-- Groq API Key (free at https://console.groq.com/keys)
-
-### Setup
+##  Local Setup
 
 ```bash
-python -m venv .venv
-.venv\Scripts\activate
 pip install -r requirements.txt
-```
 
-Create a local `.env` file:
+# Windows PowerShell (example)
+$env:GROQ_API_KEY = "your_groq_api_key"
+$env:ENABLE_DUMMY_DATA = "1"  # optional demo mode for My Orders
 
-```env
-GROQ_API_KEY=gsk_your_groq_api_key_here
-ENABLE_DUMMY_DATA=1
-```
-
-## Demo Test Customers (Optional)
-
-If you set `ENABLE_DUMMY_DATA=1`, the app will accept the following **demo** email/PIN pairs for the **👤 My Orders** flow:
-
-- donaldgarcia@example.net / 7912
-- michellejames@example.com / 1520
-- laurahenderson@example.org / 1488
-- spenceamanda@example.org / 2535
-- glee@example.net / 4582
-- williamsthomas@example.net / 4811
-- justin78@example.net / 9279
-- jason31@example.com / 1434
-- samuel81@example.com / 4257
-- williamleon@example.net / 9928
-
-When demo data is enabled, the PIN is validated locally (so it is not required to be verified by the MCP server).
-
-Run locally:
-
-```bash
 streamlit run app.py
 ```
 
-Open http://localhost:8501
+##  Test Data
 
-## Deployment to HuggingFace Spaces
+If `ENABLE_DUMMY_DATA=1`, the app will validate PINs locally for the ** My Orders** flow.
 
-1. Create a new Space (SDK: Streamlit)
-2. Upload `app.py`, `requirements.txt`, `README.md`
-3. In Space Settings → Secrets, add `GROQ_API_KEY`
-4. Wait for the build to complete
+| Email | PIN |
+|-------|-----|
+| donaldgarcia@example.net | 7912 |
+| michellejames@example.com | 1520 |
+| laurahenderson@example.org | 1488 |
+| spenceamanda@example.org | 2535 |
+| glee@example.net | 4582 |
+| williamsthomas@example.net | 4811 |
+| justin78@example.net | 9279 |
+| jason31@example.com | 1434 |
+| samuel81@example.com | 4257 |
+| williamleon@example.net | 9928 |
 
-## Project Structure
+##  Live Demo
 
-```
-.
-├── app.py
-├── requirements.txt
-├── README.md
-└── .env
-```
+**HuggingFace Spaces:** (add your link after deployment)
+
+##  Videos
+
+- Video 1: Problem & Plan
+- Video 2: Activities, Decisions & Challenges
+- Video 3: Demo & Future Improvements
+
+##  Author
+
+Rodrigo Wurdig - Andela GenAI Bootcamp

@@ -16,6 +16,16 @@ from mcp.client.sse import sse_client
 load_dotenv()  # Load .env file for local development
 nest_asyncio.apply()
 
+
+def _env_flag(name: str, default: bool = False) -> bool:
+    val = os.environ.get(name)
+    if val is None:
+        return default
+    return val.strip().lower() in {"1", "true", "yes", "y", "on"}
+
+
+ENABLE_DUMMY_DATA = _env_flag("ENABLE_DUMMY_DATA", default=False)
+
 st.set_page_config(
     page_title="SuperTech Store Support",
     page_icon="🛍️",
@@ -34,26 +44,21 @@ def _get_api_key() -> str:
 
 
 api_key = _get_api_key()
+client = None
 if not api_key:
-    st.error(
-        "⚠️ Missing GROQ_API_KEY. Please set it in Streamlit secrets or environment variables."
-    )
-    st.stop()
-
-
-client = Groq(api_key=api_key)
+    if ENABLE_DUMMY_DATA:
+        st.warning(
+            "Demo mode enabled (ENABLE_DUMMY_DATA=1): GROQ_API_KEY is missing, so LLM chat is disabled. Use 👤 My Orders to test mock data."
+        )
+    else:
+        st.error(
+            "⚠️ Missing GROQ_API_KEY. Please set it in Streamlit secrets or environment variables."
+        )
+        st.stop()
+else:
+    client = Groq(api_key=api_key)
 MCP_SERVER_URL = "https://vipfapwm3x.us-east-1.awsapprunner.com/mcp"
 MODEL_ID = "llama-3.1-8b-instant"  # Fast and free
-
-
-def _env_flag(name: str, default: bool = False) -> bool:
-    val = os.environ.get(name)
-    if val is None:
-        return default
-    return val.strip().lower() in {"1", "true", "yes", "y", "on"}
-
-
-ENABLE_DUMMY_DATA = _env_flag("ENABLE_DUMMY_DATA", default=False)
 
 # Demo-only customer verification data (for local testing).
 # NOTE: Keep this behind ENABLE_DUMMY_DATA so it cannot accidentally bypass real verification.
@@ -155,6 +160,9 @@ def mcp_tool_to_groq(tool):
 # ============================================
 async def process_message(user_input, chat_history):
     """Process user message with tool-calling via MCP (SSE)."""
+
+    if client is None:
+        return "LLM chat is disabled because GROQ_API_KEY is missing. Enable demo mode with ENABLE_DUMMY_DATA=1 to test mock orders, or set GROQ_API_KEY to use full chat."
 
     async with sse_client(
         MCP_SERVER_URL,
@@ -289,6 +297,12 @@ def _append_assistant_message(text: str) -> None:
     st.session_state.messages.append({"role": "assistant", "content": text})
 
 
+def _append_user_message(text: str) -> None:
+    with st.chat_message("user"):
+        st.write(text)
+    st.session_state.messages.append({"role": "user", "content": text})
+
+
 # ============================================
 # 6. USER INTERFACE
 # ============================================
@@ -374,10 +388,8 @@ if st.session_state.pending_action:
 
                 # Demo mode: verify + show demo orders without sending the PIN to the LLM.
                 if ENABLE_DUMMY_DATA and normalized_email in DUMMY_CUSTOMER_PINS:
-                    handle_user_input(
-                        {"display": f"My email is {normalized_email}. Show me my orders.", "model": f"My email is {normalized_email}. Show me my orders."}
-                    )
-
+                    user_text = f"My email is {normalized_email}. Show me my orders."
+                    _append_user_message(user_text)
                     if normalized_pin != DUMMY_CUSTOMER_PINS[normalized_email]:
                         _append_assistant_message(
                             "❌ Verification failed (demo data): the PIN does not match this email."
