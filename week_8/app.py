@@ -17,8 +17,18 @@ load_dotenv()  # Load .env file for local development
 nest_asyncio.apply()
 
 
-def _env_flag(name: str, default: bool = False) -> bool:
+def _get_config_value(name: str):
     val = os.environ.get(name)
+    if val is not None:
+        return val
+    try:
+        return st.secrets.get(name)
+    except Exception:
+        return None
+
+
+def _env_flag(name: str, default: bool = False) -> bool:
+    val = _get_config_value(name)
     if val is None:
         return default
     return val.strip().lower() in {"1", "true", "yes", "y", "on"}
@@ -164,93 +174,109 @@ async def process_message(user_input, chat_history):
     if client is None:
         return "LLM chat is disabled because GROQ_API_KEY is missing. Enable demo mode with ENABLE_DUMMY_DATA=1 to test mock orders, or set GROQ_API_KEY to use full chat."
 
-    async with sse_client(
-        MCP_SERVER_URL,
-        headers={"Accept": "text/event-stream", "Content-Type": "application/json"},
-        timeout=30,
-        sse_read_timeout=300,
-    ) as (read, write):
-        async with ClientSession(read, write) as session:
-            await session.initialize()
+    last_err: Exception | None = None
+    for attempt in range(1, 4):
+        try:
+            async with sse_client(
+                MCP_SERVER_URL,
+                headers={"Accept": "text/event-stream", "Content-Type": "application/json"},
+                timeout=30,
+                sse_read_timeout=300,
+            ) as (read, write):
+                async with ClientSession(read, write) as session:
+                    await session.initialize()
 
-            mcp_tools = await session.list_tools()
-            groq_tools = [mcp_tool_to_groq(t) for t in mcp_tools.tools]
+                    mcp_tools = await session.list_tools()
+                    groq_tools = [mcp_tool_to_groq(t) for t in mcp_tools.tools]
 
-            messages = [{"role": "system", "content": SYSTEM_PROMPT}]
-            messages.extend(chat_history)
-            messages.append({"role": "user", "content": user_input})
+                    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+                    messages.extend(chat_history)
+                    messages.append({"role": "user", "content": user_input})
 
-            response = client.chat.completions.create(
-                model=MODEL_ID,
-                messages=messages,
-                tools=groq_tools,
-                tool_choice="auto",
-                max_tokens=512,
-                temperature=0.2,
-            )
+                    response = client.chat.completions.create(
+                        model=MODEL_ID,
+                        messages=messages,
+                        tools=groq_tools,
+                        tool_choice="auto",
+                        max_tokens=512,
+                        temperature=0.2,
+                    )
 
-            assistant_msg = response.choices[0].message
-            tool_calls = assistant_msg.tool_calls or []
+                    assistant_msg = response.choices[0].message
+                    tool_calls = assistant_msg.tool_calls or []
 
-            if not tool_calls:
-                return assistant_msg.content or ""
+                    if not tool_calls:
+                        return assistant_msg.content or ""
 
-            # Append dict (NOT the SDK object), so Groq can serialize tool calls.
-            messages.append(
-                {
-                    "role": "assistant",
-                    "content": assistant_msg.content,
-                    "tool_calls": [
+                    # Append dict (NOT the SDK object), so Groq can serialize tool calls.
+                    messages.append(
                         {
-                            "id": tc.id,
-                            "type": "function",
-                            "function": {
-                                "name": tc.function.name,
-                                "arguments": tc.function.arguments,
-                            },
+                            "role": "assistant",
+                            "content": assistant_msg.content,
+                            "tool_calls": [
+                                {
+                                    "id": tc.id,
+                                    "type": "function",
+                                    "function": {
+                                        "name": tc.function.name,
+                                        "arguments": tc.function.arguments,
+                                    },
+                                }
+                                for tc in tool_calls
+                            ],
                         }
-                        for tc in tool_calls
-                    ],
-                }
-            )
+                    )
 
-            tool_names = [tc.function.name for tc in tool_calls]
-            st.toast(f"🛠️ Using tools: {', '.join(tool_names)}")
+                    tool_names = [tc.function.name for tc in tool_calls]
+                    st.toast(f"🛠️ Using tools: {', '.join(tool_names)}")
 
-            for tc in tool_calls:
-                function_name = tc.function.name
-                function_args = json.loads(tc.function.arguments or "{}")
+                    for tc in tool_calls:
+                        function_name = tc.function.name
+                        function_args = json.loads(tc.function.arguments or "{}")
 
-                result = await session.call_tool(function_name, function_args)
+                        result = await session.call_tool(function_name, function_args)
 
-                # Serialize tool results safely as JSON.
-                if hasattr(result, "content"):
-                    try:
-                        content_str = json.dumps(
-                            result.content, ensure_ascii=False, default=str
+                        # Serialize tool results safely as JSON.
+                        if hasattr(result, "content"):
+                            try:
+                                content_str = json.dumps(
+                                    result.content, ensure_ascii=False, default=str
+                                )
+                            except Exception:
+                                content_str = str(result.content)
+                        else:
+                            content_str = json.dumps(result, ensure_ascii=False, default=str)
+
+                        messages.append(
+                            {
+                                "role": "tool",
+                                "tool_call_id": tc.id,
+                                "name": function_name,
+                                "content": content_str,
+                            }
                         )
-                    except Exception:
-                        content_str = str(result.content)
-                else:
-                    content_str = json.dumps(result, ensure_ascii=False, default=str)
 
-                messages.append(
-                    {
-                        "role": "tool",
-                        "tool_call_id": tc.id,
-                        "name": function_name,
-                        "content": content_str,
-                    }
-                )
+                    final_response = client.chat.completions.create(
+                        model=MODEL_ID,
+                        messages=messages,
+                        tools=groq_tools,
+                        max_tokens=512,
+                        temperature=0.2,
+                    )
+                    return final_response.choices[0].message.content or ""
+        except Exception as e:
+            last_err = e
+            # Transient network/SSE errors happen; retry a couple times.
+            if attempt < 3:
+                await asyncio.sleep(0.8 * attempt)
+                continue
+            break
 
-            final_response = client.chat.completions.create(
-                model=MODEL_ID,
-                messages=messages,
-                tools=groq_tools,
-                max_tokens=512,
-                temperature=0.2,
-            )
-            return final_response.choices[0].message.content or ""
+    return (
+        "Sorry — the connection to our tools service dropped while processing your request. "
+        "Please try again in a moment.\n\n"
+        f"(Details: {last_err})"
+    )
 
 
 # ============================================
@@ -278,7 +304,24 @@ def handle_user_input(user_input):
                     for m in st.session_state.messages[:-1]
                 ]
 
-                response_text = asyncio.run(process_message(model_input, groq_history))
+                # Avoid asyncio.run() because it creates/closes an event loop per request,
+                # which can break background SSE tasks in some environments.
+                try:
+                    loop = asyncio.get_running_loop()
+                    # If we're already in a running loop, schedule a task.
+                    response_text = loop.run_until_complete(
+                        process_message(model_input, groq_history)
+                    )
+                except RuntimeError:
+                    # No running loop; use (or create) the default loop.
+                    try:
+                        loop = asyncio.get_event_loop()
+                    except RuntimeError:
+                        loop = asyncio.new_event_loop()
+                        asyncio.set_event_loop(loop)
+                    response_text = loop.run_until_complete(
+                        process_message(model_input, groq_history)
+                    )
                 st.write(response_text)
                 st.session_state.messages.append(
                     {"role": "assistant", "content": response_text}
