@@ -1,7 +1,6 @@
 ﻿---
 title: SuperTech Store Customer Support
-emoji: 
-colorFrom: blue
+emoji: ""
 colorTo: purple
 sdk: streamlit
 sdk_version: 1.28.0
