@@ -360,25 +360,21 @@ if "pending_action" not in st.session_state:
 
 st.markdown("### ⚡ Quick Actions")
 
-col1, col2, col3, col4, col5 = st.columns(5)
+col1, col2, col3, col4 = st.columns(4)
 
 with col1:
-    if st.button("📦 Order Status", use_container_width=True):
-        st.session_state.pending_action = "order_status"
-
-with col2:
     if st.button("🛒 View Products", use_container_width=True):
         st.session_state.pending_action = "list_products"
 
-with col3:
+with col2:
     if st.button("🔍 Search", use_container_width=True):
         st.session_state.pending_action = "search_product"
 
-with col4:
+with col3:
     if st.button("↩️ Returns", use_container_width=True):
         st.session_state.pending_action = "return_policy"
 
-with col5:
+with col4:
     if st.button("👤 My Orders", use_container_width=True):
         st.session_state.pending_action = "my_orders"
 
@@ -386,17 +382,7 @@ with col5:
 if st.session_state.pending_action:
     action = st.session_state.pending_action
 
-    if action == "order_status":
-        with st.form("order_form", clear_on_submit=True):
-            st.markdown("**📦 Check Order Status**")
-            order_id = st.text_input("Enter your Order ID:", placeholder="e.g., ORD-12345")
-            submitted = st.form_submit_button("Check Status", use_container_width=True)
-            if submitted and order_id:
-                st.session_state.pending_action = None
-                handle_user_input(f"What is the status of order {order_id}?")
-                st.rerun()
-
-    elif action == "list_products":
+    if action == "list_products":
         st.session_state.pending_action = None
         handle_user_input("Show me all available products.")
         st.rerun()
